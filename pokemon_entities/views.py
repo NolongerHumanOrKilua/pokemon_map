@@ -28,13 +28,14 @@ def add_pokemon(folium_map, lat, lon, image_url=DEFAULT_IMAGE_URL):
 
 def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon in Pokemon.objects.all():
-        for pokemon_entity in PokemonEntity.objects.filter(pokemon=pokemon):
-            add_pokemon(
-                folium_map, pokemon_entity.Lat,
-                pokemon_entity.Lon,
-                "http://127.0.0.1:8000" + pokemon.pokemon_image.url
-            )
+    pokemons_entities = PokemonEntity.objects.all()
+    for pokemon_entity in pokemons_entities:
+        pokemon_image_url = request.build_absolute_uri(pokemon.pokemon_image.url)
+        add_pokemon(
+            folium_map, pokemon_entity.lat,
+            pokemon_entity.lon,
+            pokemon_image_url
+        )
 
     pokemons_on_page = []
     for pokemon in Pokemon.objects.all():
@@ -54,10 +55,9 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    for pokemon in Pokemon.objects.all():
-        if pokemon.id == int(pokemon_id):
-            requested_pokemon = pokemon
-            break
+    for pokemon in Pokemon.objects.filter(id=pokemon_id):
+        requested_pokemon = pokemon
+        break
     else:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
     pokemon = {
@@ -73,19 +73,21 @@ def show_pokemon(request, pokemon_id):
             'title_ru': requested_pokemon.previous_evolution.title,
             'pokemon_id': requested_pokemon.previous_evolution.id,
             'img_url': requested_pokemon.previous_evolution.pokemon_image.url
-        }    
-    if requested_pokemon.next_evolution:
-        pokemon["next_evolution"] = {
-            'title_ru': requested_pokemon.next_evolution.title,
-            'pokemon_id': requested_pokemon.next_evolution.id,
-            'img_url': requested_pokemon.next_evolution.pokemon_image.url
         }        
+    if requested_pokemon.next_evolution.all():
+        next_evolution = requested_pokemon.next_evolution.all()[0]
+        pokemon["next_evolution"] = {
+            'title_ru': next_evolution.title,
+            'pokemon_id': next_evolution.id,
+            'img_url': next_evolution.pokemon_image.url
+        }                   
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    for pokemon_entity in PokemonEntity.objects.filter(pokemon=requested_pokemon):
+    requested_pokemon_entities = requested_pokemon.entities.all()
+    for pokemon_entity in requested_pokemon_entities:
         add_pokemon(
-            folium_map, pokemon_entity.Lat,
-            pokemon_entity.Lon,
-            "http://127.0.0.1:8000" + pokemon_entity.pokemon.pokemon_image.url
+            folium_map, pokemon_entity.lat,
+            pokemon_entity.lon,
+            request.build_absolute_uri(pokemon_entity.pokemon.pokemon_image.url)
         )
 
     return render(request, 'pokemon.html', context={

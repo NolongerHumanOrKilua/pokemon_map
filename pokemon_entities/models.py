@@ -8,20 +8,19 @@ class Pokemon(models.Model):
     title_jp = models.CharField(max_length=200, blank=True, verbose_name="название на японском")
     pokemon_image = models.ImageField(null=True, blank=True, verbose_name="картинка покемона")
     description = models.TextField(blank=True, verbose_name="описание покемона")
-    previous_evolution = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name='+', verbose_name="из кого эволюционировал")
-    next_evolution = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name='+', verbose_name="в кого эволюционировал")
+    previous_evolution = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name='next_evolution', verbose_name="Эволюция")
 
     def __str__(self):
         return self.title
 
 class PokemonEntity(models.Model):
-    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, verbose_name="покемон")
-    Lat = models.FloatField(blank=True, verbose_name="широта")
-    Lon = models.FloatField(blank=True, verbose_name="долгота")
+    pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, related_name='entities', verbose_name="покемон")
+    lat = models.FloatField(blank=True, verbose_name="широта")
+    lon = models.FloatField(blank=True, verbose_name="долгота")
     appeared_at = models.DateTimeField(blank=True, null=True, verbose_name="был добавлен")
     disappeared_at = models.DateTimeField(blank=True, null=True, verbose_name="был убран")
-    Level = models.IntegerField(blank=True, null=True, verbose_name="уровень")
-    Health = models.IntegerField(blank=True, null=True, verbose_name="здоровье")
-    Strenght = models.IntegerField(blank=True, null=True, verbose_name="сила")
-    Defence = models.IntegerField(blank=True, null=True, verbose_name="защита")
-    Stamina = models.IntegerField(blank=True, null=True, verbose_name="выносливость")
+    level = models.IntegerField(blank=True, null=True, verbose_name="уровень")
+    health = models.IntegerField(blank=True, null=True, verbose_name="здоровье")
+    strenght = models.IntegerField(blank=True, null=True, verbose_name="сила")
+    defence = models.IntegerField(blank=True, null=True, verbose_name="защита")
+    stamina = models.IntegerField(blank=True, null=True, verbose_name="выносливость")
