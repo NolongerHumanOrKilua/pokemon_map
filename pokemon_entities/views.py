@@ -30,7 +30,7 @@ def show_all_pokemons(request):
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
     pokemons_entities = PokemonEntity.objects.all()
     for pokemon_entity in pokemons_entities:
-        pokemon_image_url = request.build_absolute_uri(pokemon.pokemon_image.url)
+        pokemon_image_url = request.build_absolute_uri(pokemon_entity.pokemon.pokemon_image.url)
         add_pokemon(
             folium_map, pokemon_entity.lat,
             pokemon_entity.lon,
@@ -55,10 +55,9 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    for pokemon in Pokemon.objects.filter(id=pokemon_id):
-        requested_pokemon = pokemon
-        break
-    else:
+    try:
+        requested_pokemon = Pokemon.objects.get(id=pokemon_id)
+    except:
         return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
     pokemon = {
         'pokemon_id': requested_pokemon.id,
@@ -68,14 +67,14 @@ def show_pokemon(request, pokemon_id):
         'img_url': requested_pokemon.pokemon_image.url,
         "description": requested_pokemon.description
         }
-    if requested_pokemon.previous_evolution:
+    if requested_pokemon.previous_evolutions:
         pokemon["previous_evolution"] = {
-            'title_ru': requested_pokemon.previous_evolution.title,
-            'pokemon_id': requested_pokemon.previous_evolution.id,
-            'img_url': requested_pokemon.previous_evolution.pokemon_image.url
+            'title_ru': requested_pokemon.previous_evolutions.title,
+            'pokemon_id': requested_pokemon.previous_evolutions.id,
+            'img_url': requested_pokemon.previous_evolutions.pokemon_image.url
         }        
-    if requested_pokemon.next_evolution.all():
-        next_evolution = requested_pokemon.next_evolution.all()[0]
+    if requested_pokemon.next_evolutions.all():
+        next_evolution = requested_pokemon.next_evolutions.all()[0]
         pokemon["next_evolution"] = {
             'title_ru': next_evolution.title,
             'pokemon_id': next_evolution.id,
