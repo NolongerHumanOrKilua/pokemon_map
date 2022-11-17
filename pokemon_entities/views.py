@@ -56,10 +56,7 @@ def show_all_pokemons(request):
 
 
 def show_pokemon(request, pokemon_id):
-    try:
-        requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
-    except:
-        return HttpResponseNotFound('<h1>Такой покемон не найден</h1>')
+    requested_pokemon = get_object_or_404(Pokemon, id=pokemon_id)
     pokemon = {
         'pokemon_id': requested_pokemon.id,
         'title_ru': requested_pokemon.title,
@@ -82,7 +79,7 @@ def show_pokemon(request, pokemon_id):
             'img_url': next_evolution.image.url
         }                   
     folium_map = folium.Map(location=MOSCOW_CENTER, zoom_start=12)
-    requested_pokemon_entities = requested_pokemon.entities.all()
+    requested_pokemon_entities = requested_pokemon.entities.filter(appeared_at__gte=datetime.now, disappeared_at__lte=datetime.now)
     for pokemon_entity in requested_pokemon_entities:
         add_pokemon(
             folium_map, pokemon_entity.lat,
